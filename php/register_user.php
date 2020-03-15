@@ -23,7 +23,7 @@ else
 
 function sendEmail($useremail) {
     $to      = $useremail; 
-    $subject = 'Verification for Mobile.Miner'; 
+    $subject = 'Verification for Mobile Miner'; 
     $message = 'http://justminedb.com/mobileminer/php/verify.php?email='.$useremail; 
     $headers = 'From: noreply@mobileminer.com' . "\r\n" . 
     'Reply-To: '.$useremail . "\r\n" . 
