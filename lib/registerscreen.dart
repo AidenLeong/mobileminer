@@ -77,7 +77,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 onTap: _loginScreen,
                 child: Text(
                   "I'm already a member",
-                  style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontFamily: 'Solway',fontSize: 16.0, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -104,7 +104,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             keyboardType: TextInputType.text,
             decoration: InputDecoration(
               labelText: 'Name',
-              labelStyle: new TextStyle(
+              labelStyle: new TextStyle(fontFamily: 'Solway',
                 color: Colors.black,
               ),
               enabledBorder: UnderlineInputBorder(
@@ -124,7 +124,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               keyboardType: TextInputType.emailAddress,
               decoration: InputDecoration(
                 labelText: 'Email',
-                labelStyle: new TextStyle(
+                labelStyle: new TextStyle(fontFamily: 'Solway',
                   color: Colors.black,
                 ),
                 enabledBorder: UnderlineInputBorder(
@@ -143,7 +143,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               keyboardType: TextInputType.phone,
               decoration: InputDecoration(
                 labelText: 'Phone number',
-                labelStyle: new TextStyle(
+                labelStyle: new TextStyle(fontFamily: 'Solway',
                   color: Colors.black,
                 ),
                 enabledBorder: UnderlineInputBorder(
@@ -161,7 +161,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               controller: _passwordEditingController,
               decoration: InputDecoration(
                 labelText: 'Password',
-                labelStyle: new TextStyle(
+                labelStyle: new TextStyle(fontFamily: 'Solway',
                   color: Colors.black,
                 ),
                 enabledBorder: UnderlineInputBorder(
@@ -191,7 +191,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   },
                 ),
                 Text('I accept to the',
-                    style: TextStyle(
+                    style: TextStyle(fontFamily: 'Solway',
                       fontSize: 16,
                     )),
 
@@ -199,7 +199,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 GestureDetector(
                   onTap: _showEULA,
                   child: Text('Terms and Condition',
-                      style: TextStyle(
+                      style: TextStyle(fontFamily: 'Solway',
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           decoration: TextDecoration.underline)),
@@ -217,7 +217,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         borderRadius: BorderRadius.circular(15.0)),
                     minWidth: 300,
                     height: 50,
-                    child: Text('SIGN UP'),
+                    child: Text('SIGN UP', style: TextStyle(fontFamily: 'Solway',),),
                     color: Colors.teal[400],
                     textColor: Colors.white,
                     elevation: 10,
@@ -242,7 +242,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               padding: EdgeInsets.fromLTRB(50, 220, 50, 100),
               child: Text(
                 "SIGN UP",
-                style: TextStyle(
+                style: TextStyle(fontFamily: 'Solway',
                     fontSize: 18,
                     color: Colors.black,
                     fontWeight: FontWeight.w900),
@@ -305,7 +305,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   onPressed: () {
                     Navigator.of(context).pop(_register1());
                   },
-                  child: Text("Yes")),
+                  child: Text("Yes", style: TextStyle(fontFamily: 'Solway',),)),
               MaterialButton(
                   onPressed: () {
                     Navigator.of(context).pop(false);
@@ -336,7 +336,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       builder: (BuildContext context) {
         // return object of type Dialog
         return AlertDialog(
-          title: new Text("EULA"),
+          title: new Text("EULA", style: TextStyle(fontFamily: 'Solway',),),
           content: new Container(
             height: screenHeight / 2,
             child: Column(
@@ -348,7 +348,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         softWrap: true,
                         textAlign: TextAlign.justify,
                         text: TextSpan(
-                            style: TextStyle(
+                            style: TextStyle(fontFamily: 'Solway',
                               color: Colors.black,
                               //fontWeight: FontWeight.w500,
                               fontSize: 12.0,
@@ -365,7 +365,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           actions: <Widget>[
             // usually buttons at the bottom of the dialog
             new FlatButton(
-              child: new Text("Close"),
+              child: new Text("Close", style: TextStyle(fontFamily: 'Solway',),),
               onPressed: () {
                 Navigator.of(context).pop();
               },

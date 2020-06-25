@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mobileminer/registerscreen.dart';
 import 'package:http/http.dart' as http;
+import 'package:mobileminer/user.dart';
 import 'package:toast/toast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mobileminer/mainscreen.dart';
+import 'package:progress_dialog/progress_dialog.dart';
 
 void main() => runApp(LoginScreen());
 bool rememberMe = false;
@@ -74,12 +77,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 //Email
                 TextField(
                     controller: _emailEditingController,
-                    
                     keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
-                      
                       labelText: 'Email',
-                      labelStyle: new TextStyle(
+                      labelStyle: new TextStyle(fontFamily: 'Solway',
                         color: Colors.white,
                       ),
                       enabledBorder: UnderlineInputBorder(
@@ -91,13 +92,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       icon: Icon(Icons.email, color: Colors.white),
                     )),
 
-                  
-                //Password    
+                //Password
                 TextField(
                   controller: _passEditingController,
                   decoration: InputDecoration(
                     labelText: 'Password',
-                    labelStyle: new TextStyle(
+                    labelStyle: new TextStyle(fontFamily: 'Solway',
                       color: Colors.white,
                     ),
                     enabledBorder: UnderlineInputBorder(
@@ -114,19 +114,26 @@ class _LoginScreenState extends State<LoginScreen> {
                   height: 10,
                 ),
                 Row(
+             
                   children: <Widget>[
-                    Padding(
-                      padding: EdgeInsets.only(left: 200),
-                      child: GestureDetector(
-                        onTap: _forgotPassword,
-                        child: Text(
-                          "Forget Password?",
-                          style: TextStyle(fontSize: 14.0, color: Colors.white),
-                        ),
-                      ),
+                    Checkbox(
+                      value: rememberMe,
+                      onChanged: (bool value) {
+                        _onRememberMeChanged(value);
+                      },
                     ),
+                    Padding(
+                      padding: EdgeInsets.only(),
+                      child: Text('Remember Me ',
+                          style: TextStyle(fontFamily: 'Solway',
+                              fontSize: 16  ,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white)),
+                    ),
+                 
                   ],
                 ),
+               
 
                 //Login button
                 Row(
@@ -141,7 +148,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         height: 50,
                         child: Text(
                           'LOG IN',
-                          style: TextStyle(fontSize: 16),
+                          style: TextStyle(fontFamily: 'Solway',fontSize: 16),
                         ),
                         color: Colors.teal[400],
                         textColor: Colors.white,
@@ -169,7 +176,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               new Text(
                 "OR",
-                style: TextStyle(
+                style: TextStyle(fontFamily: 'Solway',
                   fontSize: 16,
                   color: Colors.white,
                 ),
@@ -210,7 +217,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   height: 50,
                   child: Text(
                     'SIGN UP',
-                    style: TextStyle(fontSize: 16),
+                    style: TextStyle(fontFamily: 'Solway',fontSize: 16),
                   ),
                   color: Colors.teal[400],
                   textColor: Colors.white,
@@ -224,7 +231,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-  
+
   //Title for Login page
   Widget pageTitle() {
     return Container(
@@ -237,7 +244,7 @@ class _LoginScreenState extends State<LoginScreen> {
               padding: EdgeInsets.fromLTRB(50, 182, 50, 100),
               child: Text(
                 "LOGIN",
-                style: TextStyle(
+                style: TextStyle(fontFamily: 'Solway',
                     fontSize: 18,
                     color: Colors.white,
                     fontWeight: FontWeight.w900),
@@ -248,24 +255,51 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   //Notice for login sucess or failure
-  void _userLogin() {
-    String _email = _emailEditingController.text;
-    String _password = _passEditingController.text;
+  void _userLogin() async{
+    try {
+      ProgressDialog pr = new ProgressDialog(context,
+          type: ProgressDialogType.Normal, isDismissible: false);
+      pr.style(message: "Log in...");
+      pr.show();
+      String _email = _emailEditingController.text;
+      String _password = _passEditingController.text;
 
-    http.post(urlLogin, body: {
-      "email": _email,
-      "password": _password,
-    }).then((res) {
-      if (res.body == "success") {
-        Toast.show("Login Success", context,
-            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
-      } else {
-        Toast.show("Invalid Email and Password", context,
-            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
-      }
-    }).catchError((err) {
-      print(err);
-    });
+      http.post(urlLogin, body: {
+        "email": _email,
+        "password": _password,
+      })
+          //.timeout(const Duration(seconds: 4))
+          .then((res) {
+        print(res.body);
+        var string = res.body;
+        List userdata = string.split(",");
+        if (userdata[0] == "success") {
+          User _user = new User(
+              name: userdata[1],
+              email: _email,
+              password: _password,
+              phone: userdata[3],
+              quantity: userdata[4]);
+          pr.hide();
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (BuildContext context) => MainScreen(
+                        user: _user,
+                      )));
+        } else {
+          pr.hide();
+          Toast.show("Login failed", context,
+              duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+        }
+      }).catchError((err) {
+        print(err);
+        pr.hide();
+      });
+    } on Exception catch (_) {
+      Toast.show("Error", context,
+          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+    }
   }
 
   void _registerUser() {
@@ -273,8 +307,8 @@ class _LoginScreenState extends State<LoginScreen> {
         MaterialPageRoute(builder: (BuildContext context) => RegisterScreen()));
   }
 
- //Forget Password
-  void _forgotPassword() {
+  //Forget Password
+ /* void _forgotPassword() {
     TextEditingController phoneController = TextEditingController();
     // flutter defined function
     showDialog(
@@ -282,13 +316,13 @@ class _LoginScreenState extends State<LoginScreen> {
       builder: (BuildContext context) {
         // return object of type Dialog
         return AlertDialog(
-          title: new Text("Forget Password?"),
+          title: new Text("Forget Password?", style: TextStyle(fontFamily: 'Solway',),),
           content: new Container(
             height: 150,
             child: Column(
               children: <Widget>[
                 Text(
-                  "Please enter your recovery email. A reset password email will send to the inbox of the recovery email. ",
+                  "Please enter your recovery email. A reset password email will send to the inbox of the recovery email. ", style: TextStyle(fontFamily: 'Solway',),
                 ),
                 TextField(
                     decoration: InputDecoration(
@@ -301,7 +335,7 @@ class _LoginScreenState extends State<LoginScreen> {
           actions: <Widget>[
             // usually buttons at the bottom of the dialog
             new FlatButton(
-              child: new Text("Yes"),
+              child: new Text("Yes", style: TextStyle(fontFamily: 'Solway',),),
               onPressed: () {
                 Navigator.of(context).pop();
                 print(
@@ -310,7 +344,7 @@ class _LoginScreenState extends State<LoginScreen> {
               },
             ),
             new FlatButton(
-              child: new Text("No"),
+              child: new Text("No", style: TextStyle(fontFamily: 'Solway',),),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -319,7 +353,7 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       },
     );
-  }
+  }*/
 
   //Exit the application
   Future<bool> _onBackPressed() {
@@ -332,12 +366,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: () {
                     SystemChannels.platform.invokeMethod('SystemNavigator.pop');
                   },
-                  child: Text("Yes")),
+                  child: Text("Yes", style: TextStyle(fontFamily: 'Solway',),)),
               MaterialButton(
                   onPressed: () {
                     Navigator.of(context).pop(false);
                   },
-                  child: Text("No")),
+                  child: Text("No", style: TextStyle(fontFamily: 'Solway',),)),
             ],
           ),
         ) ??
@@ -380,4 +414,14 @@ class _LoginScreenState extends State<LoginScreen> {
           duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
     }
   }
+
+  void _onRememberMeChanged(bool newValue) => setState(() {
+        rememberMe = newValue;
+        print(rememberMe);
+        if (rememberMe) {
+          savepref(true);
+        } else {
+          savepref(false);
+        }
+      });
 }
