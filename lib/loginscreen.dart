@@ -3,10 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:mobileminer/registerscreen.dart';
 import 'package:http/http.dart' as http;
 import 'package:mobileminer/user.dart';
-import 'package:toast/toast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mobileminer/mainscreen.dart';
 import 'package:progress_dialog/progress_dialog.dart';
+
+import 'adminscreen.dart';
 
 void main() => runApp(LoginScreen());
 bool rememberMe = false;
@@ -17,11 +18,14 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final GlobalKey<ScaffoldState> _scaffold = new GlobalKey<ScaffoldState>();
+
   double screenHeight;
   TextEditingController _emailEditingController = new TextEditingController();
   TextEditingController _passEditingController = new TextEditingController();
   String urlLogin = "https://justminedb.com/mobileminer/php/login_user.php";
-
+  String admin = "admin@gmail.com";
+  String input;
   @override
   void initState() {
     super.initState();
@@ -35,6 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return WillPopScope(
       onWillPop: _onBackPressed,
       child: Scaffold(
+          key: _scaffold,
           resizeToAvoidBottomPadding: false,
           body: Stack(
             children: <Widget>[
@@ -75,38 +80,34 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
 
                 //Email
-                TextField(
-                    controller: _emailEditingController,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      labelStyle: new TextStyle(fontFamily: 'Solway',
-                        color: Colors.white,
-                      ),
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white),
-                      ),
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white),
-                      ),
-                      icon: Icon(Icons.email, color: Colors.white),
-                    )),
+                TextFormField(
+                  style: TextStyle(color: Colors.white, fontFamily: 'Solway'),
+                  controller: _emailEditingController,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: InputDecoration(
+                      hintText: 'Email',
+                      border: new OutlineInputBorder(
+                        borderRadius: new BorderRadius.circular(25.0),
+                        borderSide:
+                            new BorderSide(color: Colors.white, width: 30.0),
+                      )),
+                ),
 
+                SizedBox(
+                  height: 10,
+                ),
                 //Password
-                TextField(
+                TextFormField(
+                  style: TextStyle(color: Colors.white, fontFamily: 'Solway'),
                   controller: _passEditingController,
                   decoration: InputDecoration(
-                    labelText: 'Password',
-                    labelStyle: new TextStyle(fontFamily: 'Solway',
-                      color: Colors.white,
+                    hintText: 'Password',
+                    border: new OutlineInputBorder(
+                      borderRadius: new BorderRadius.circular(25.0),
+                      borderSide: new BorderSide(
+                        color: Colors.white,
+                      ),
                     ),
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
-                    ),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
-                    ),
-                    icon: Icon(Icons.lock, color: Colors.white),
                   ),
                   obscureText: true,
                 ),
@@ -114,7 +115,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   height: 10,
                 ),
                 Row(
-             
                   children: <Widget>[
                     Checkbox(
                       value: rememberMe,
@@ -125,15 +125,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     Padding(
                       padding: EdgeInsets.only(),
                       child: Text('Remember Me ',
-                          style: TextStyle(fontFamily: 'Solway',
-                              fontSize: 16  ,
+                          style: TextStyle(
+                              fontFamily: 'Solway',
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: Colors.white)),
                     ),
-                 
                   ],
                 ),
-               
 
                 //Login button
                 Row(
@@ -148,7 +147,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         height: 50,
                         child: Text(
                           'LOG IN',
-                          style: TextStyle(fontFamily: 'Solway',fontSize: 16),
+                          style: TextStyle(fontFamily: 'Solway', fontSize: 16),
                         ),
                         color: Colors.teal[400],
                         textColor: Colors.white,
@@ -176,7 +175,8 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               new Text(
                 "OR",
-                style: TextStyle(fontFamily: 'Solway',
+                style: TextStyle(
+                  fontFamily: 'Solway',
                   fontSize: 16,
                   color: Colors.white,
                 ),
@@ -217,7 +217,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   height: 50,
                   child: Text(
                     'SIGN UP',
-                    style: TextStyle(fontFamily: 'Solway',fontSize: 16),
+                    style: TextStyle(fontFamily: 'Solway', fontSize: 16),
                   ),
                   color: Colors.teal[400],
                   textColor: Colors.white,
@@ -244,7 +244,8 @@ class _LoginScreenState extends State<LoginScreen> {
               padding: EdgeInsets.fromLTRB(50, 182, 50, 100),
               child: Text(
                 "LOGIN",
-                style: TextStyle(fontFamily: 'Solway',
+                style: TextStyle(
+                    fontFamily: 'Solway',
                     fontSize: 18,
                     color: Colors.white,
                     fontWeight: FontWeight.w900),
@@ -255,50 +256,144 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   //Notice for login sucess or failure
-  void _userLogin() async{
-    try {
-      ProgressDialog pr = new ProgressDialog(context,
-          type: ProgressDialogType.Normal, isDismissible: false);
-      pr.style(message: "Log in...");
-      pr.show();
-      String _email = _emailEditingController.text;
-      String _password = _passEditingController.text;
+  void _userLogin() async {
+    if (_emailEditingController.text == admin) {
+      try {
+        ProgressDialog pr = new ProgressDialog(context,
+            type: ProgressDialogType.Normal, isDismissible: false);
+        pr.style(message: "Log in...");
+        pr.show();
+        String _email = _emailEditingController.text;
+        String _password = _passEditingController.text;
 
-      http.post(urlLogin, body: {
-        "email": _email,
-        "password": _password,
-      })
-          //.timeout(const Duration(seconds: 4))
-          .then((res) {
-        print(res.body);
-        var string = res.body;
-        List userdata = string.split(",");
-        if (userdata[0] == "success") {
-          User _user = new User(
+        http.post(urlLogin, body: {
+          "email": _email,
+          "password": _password,
+        })
+            //.timeout(const Duration(seconds: 4))
+            .then((res) {
+          print(res.body);
+          var string = res.body;
+          List userdata = string.split(",");
+          if (userdata[0] == "success") {
+            User _user = new User(
+                name: userdata[1],
+                email: _email,
+                password: _password,
+                phone: userdata[3],
+                wallet: userdata[4],
+                quantity: userdata[5]);
+            pr.hide();
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (BuildContext context) => AdminScreen(
+                          user: _user,
+                        )));
+          } else {
+            pr.hide();
+            final snackBar = SnackBar(
+              content: Text(
+                'Login Failed!',
+                style: TextStyle(fontFamily: "Solway"),
+              ),
+              action: SnackBarAction(
+                label: 'Close',
+                textColor: Colors.white,
+                onPressed: () {},
+              ),
+            );
+
+            _scaffold.currentState.showSnackBar(snackBar);
+          }
+        }).catchError((err) {
+          print(err);
+          pr.hide();
+        });
+      } on Exception catch (_) {
+        final snackBar = SnackBar(
+          content: Text(
+            'Error!',
+            style: TextStyle(fontFamily: "Solway"),
+          ),
+          action: SnackBarAction(
+            label: 'Close',
+            textColor: Colors.white,
+            onPressed: () {},
+          ),
+        );
+
+        _scaffold.currentState.showSnackBar(snackBar);
+      }
+    } else {
+      try {
+        ProgressDialog pr = new ProgressDialog(context,
+            type: ProgressDialogType.Normal, isDismissible: false);
+        pr.style(message: "Log in...");
+        pr.show();
+        String _email = _emailEditingController.text;
+        String _password = _passEditingController.text;
+
+        http.post(urlLogin, body: {
+          "email": _email,
+          "password": _password,
+        })
+            //.timeout(const Duration(seconds: 4))
+            .then((res) {
+          print(res.body);
+          var string = res.body;
+          List userdata = string.split(",");
+          if (userdata[0] == "success") {
+            User _user = new User(
               name: userdata[1],
               email: _email,
               password: _password,
               phone: userdata[3],
-              quantity: userdata[4]);
+              wallet: userdata[4],
+              quantity: userdata[5],
+            );
+            pr.hide();
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (BuildContext context) => MainScreen(
+                          user: _user,
+                        )));
+          } else {
+            pr.hide();
+            final snackBar = SnackBar(
+              content: Text(
+                'Login Failed!',
+                style: TextStyle(fontFamily: "Solway"),
+              ),
+              action: SnackBarAction(
+                label: 'Close',
+                textColor: Colors.white,
+                onPressed: () {},
+              ),
+            );
+
+            _scaffold.currentState.showSnackBar(snackBar);
+          }
+        }).catchError((err) {
+          print(err);
           pr.hide();
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (BuildContext context) => MainScreen(
-                        user: _user,
-                      )));
-        } else {
-          pr.hide();
-          Toast.show("Login failed", context,
-              duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
-        }
-      }).catchError((err) {
-        print(err);
-        pr.hide();
-      });
-    } on Exception catch (_) {
-      Toast.show("Error", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+        });
+      } on Exception catch (_) {
+        final snackBar = SnackBar(
+          content: Text(
+            'Error!',
+            style: TextStyle(fontFamily: "Solway"),
+          ),
+          action: SnackBarAction(
+            label: 'Close',
+            textColor: Colors.white,
+            onPressed: () {},
+          ),
+        );
+
+        _scaffold.currentState.showSnackBar(snackBar);
+      }
     }
   }
 
@@ -308,7 +403,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   //Forget Password
- /* void _forgotPassword() {
+  /* void _forgotPassword() {
     TextEditingController phoneController = TextEditingController();
     // flutter defined function
     showDialog(
@@ -366,12 +461,22 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: () {
                     SystemChannels.platform.invokeMethod('SystemNavigator.pop');
                   },
-                  child: Text("Yes", style: TextStyle(fontFamily: 'Solway',),)),
+                  child: Text(
+                    "Yes",
+                    style: TextStyle(
+                      fontFamily: 'Solway',
+                    ),
+                  )),
               MaterialButton(
                   onPressed: () {
                     Navigator.of(context).pop(false);
                   },
-                  child: Text("No", style: TextStyle(fontFamily: 'Solway',),)),
+                  child: Text(
+                    "No",
+                    style: TextStyle(
+                      fontFamily: 'Solway',
+                    ),
+                  )),
             ],
           ),
         ) ??
@@ -399,8 +504,18 @@ class _LoginScreenState extends State<LoginScreen> {
       //save preference
       await prefs.setString('email', email);
       await prefs.setString('pass', password);
-      Toast.show("Preferences have been saved", context,
-          duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
+      final snackBar = SnackBar(
+        content: Text(
+          'Preference have been saved',
+          style: TextStyle(fontFamily: "Solway"),
+        ),
+        action: SnackBarAction(
+          label: 'Close',
+          onPressed: () {},
+        ),
+      );
+
+      _scaffold.currentState.showSnackBar(snackBar);
     } else {
       //delete preference
       await prefs.setString('email', '');
@@ -410,8 +525,19 @@ class _LoginScreenState extends State<LoginScreen> {
         _passEditingController.text = '';
         rememberMe = false;
       });
-      Toast.show("Preferences have removed", context,
-          duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
+      final snackBar = SnackBar(
+        content: Text(
+          'Preference Removed!',
+          style: TextStyle(fontFamily: "Solway"),
+        ),
+        action: SnackBarAction(
+          label: 'Close',
+          textColor: Colors.white,
+          onPressed: () {},
+        ),
+      );
+
+      _scaffold.currentState.showSnackBar(snackBar);
     }
   }
 

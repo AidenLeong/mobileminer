@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:mobileminer/profilescreen.dart';
+import 'package:mobileminer/newproduct1.dart';
 import 'package:mobileminer/product.dart';
 import 'package:mobileminer/user.dart';
 import 'package:mobileminer/cartscreen.dart';
@@ -13,16 +14,17 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'infoscreen.dart';
 import 'package:carousel_pro/carousel_pro.dart';
 
-class MainScreen extends StatefulWidget {
+class AdminScreen extends StatefulWidget {
   final User user;
-  const MainScreen({Key key, this.user}) : super(key: key);
+  const AdminScreen({Key key, this.user}) : super(key: key);
 
   @override
-  _MainScreenState createState() => _MainScreenState();
+  _AdminScreenState createState() => _AdminScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _AdminScreenState extends State<AdminScreen> {
   final GlobalKey<ScaffoldState> _scaffold = new GlobalKey<ScaffoldState>();
+  GlobalKey<RefreshIndicatorState> refreshKey;
   int _currentIndex = 0;
   String cartquantity = "0";
   String titlecenter = "Loading...";
@@ -34,8 +36,9 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
+    refreshKey = GlobalKey<RefreshIndicatorState>();
     _loadData();
-    print(widget.user.wallet);
+    print(widget.user.email);
   }
 
   Widget build(BuildContext context) {
@@ -53,8 +56,7 @@ class _MainScreenState extends State<MainScreen> {
           AssetImage('assets/images/04.jpg'),
         ],
         autoplay: true,
-        //animationCurve: Curves.fastOutSlowIn,
-        // animationDuration: Duration(milliseconds: 1000),
+        
         dotSize: 4.0,
       ),
     );
@@ -67,7 +69,7 @@ class _MainScreenState extends State<MainScreen> {
         backgroundColor: Colors.white,
         appBar: AppBar(
           title: Text(
-            "Welcome, " + widget.user.name,
+            "Admin Mode",
             style: TextStyle(
               color: Colors.white,
               fontFamily: 'Solway',
@@ -75,140 +77,151 @@ class _MainScreenState extends State<MainScreen> {
           ),
           backgroundColor: Colors.indigo,
         ),
-        body: new ListView(children: <Widget>[
-          imageCarousel,
-          Container(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Container(
-                  height: screenHeight / 1.75,
-                  child: Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                    color: Colors.white,
-                    elevation: 5,
-                    child:
-                        Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
-                      productdata == null
-                          ? Flexible(
-                              child: Container(
-                                  child: Center(
-                                      child: Text(
-                              titlecenter,
-                              style: TextStyle(
-                                  color: Colors.black,
-                                  fontFamily: 'Solway',
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold),
-                            ))))
-                          : Expanded(
-                              child: GridView.count(
-                                  crossAxisCount: 2,
-                                  childAspectRatio:
-                                      (screenWidth / screenHeight) / 0.71,
-                                  children: List.generate(productdata.length,
-                                      (index) {
-                                    return Container(
-                                        child: Card(
-                                            elevation: 0.5,
-                                            child: Padding(
-                                              padding: EdgeInsets.all(5),
-                                              child: Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.end,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
-                                                children: <Widget>[
-                                                  GestureDetector(
-                                                    onTap: () =>
-                                                        _onProductDetail(index),
-                                                    child: Container(
-                                                      height:
-                                                          screenHeight / 5.9,
-                                                      width: screenWidth / 3.5,
-                                                      child: ClipRect(
-                                                          child:
-                                                              CachedNetworkImage(
-                                                        fit: BoxFit.fill,
-                                                        imageUrl: server +
-                                                            "/productimage1/${productdata[index]['id']}.jpg",
-                                                        placeholder: (context,
-                                                                url) =>
-                                                            new CircularProgressIndicator(),
-                                                        errorWidget: (context,
-                                                                url, error) =>
-                                                            new Icon(
-                                                                Icons.error),
-                                                      )),
+        body: RefreshIndicator(
+          key: refreshKey,
+          color: Colors.black,
+          onRefresh: () async {
+            await refreshList();
+          },
+          child: new ListView(children: <Widget>[
+            imageCarousel,
+            Container(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Container(
+                    height: screenHeight / 1.75,
+                    child: Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                      color: Colors.white,
+                      elevation: 5,
+                      child: Row(mainAxisSize: MainAxisSize.min, children: <
+                          Widget>[
+                        productdata == null
+                            ? Flexible(
+                                child: Container(
+                                    child: Center(
+                                        child: Text(
+                                titlecenter,
+                                style: TextStyle(
+                                    color: Colors.black,
+                                    fontFamily: 'Solway',
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold),
+                              ))))
+                            : Expanded(
+                                child: GridView.count(
+                                    crossAxisCount: 2,
+                                    childAspectRatio:
+                                        (screenWidth / screenHeight) / 0.71,
+                                    children: List.generate(productdata.length,
+                                        (index) {
+                                      return Container(
+                                          child: Card(
+                                              elevation: 0.5,
+                                              child: Padding(
+                                                padding: EdgeInsets.all(5),
+                                                child: Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.end,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  children: <Widget>[
+                                                    GestureDetector(
+                                                      onTap: () =>
+                                                          _onProductDetail(
+                                                              index),
+                                                      child: Container(
+                                                        height:
+                                                            screenHeight / 5.9,
+                                                        width:
+                                                            screenWidth / 3.5,
+                                                        child: ClipRect(
+                                                            child:
+                                                                CachedNetworkImage(
+                                                          fit: BoxFit.fill,
+                                                          imageUrl: server +
+                                                              "/productimage1/${productdata[index]['id']}.jpg",
+                                                          placeholder: (context,
+                                                                  url) =>
+                                                              new CircularProgressIndicator(),
+                                                          errorWidget: (context,
+                                                                  url, error) =>
+                                                              new Icon(
+                                                                  Icons.error),
+                                                        )),
+                                                      ),
                                                     ),
-                                                  ),
-                                                  SizedBox(
-                                                    height: 5,
-                                                  ),
-                                                  Text(
-                                                      productdata[index]
-                                                          ['name'],
-                                                      maxLines: 1,
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontFamily: 'Solway',
-                                                          color: Colors.black)),
-                                                  Text(
-                                                    "RM " +
+                                                    SizedBox(
+                                                      height: 5,
+                                                    ),
+                                                    Text(
                                                         productdata[index]
-                                                            ['price'],
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: Colors.black,
-                                                      fontFamily: 'Solway',
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    "Brand: " +
-                                                        productdata[index]
-                                                            ['type'],
-                                                    style: TextStyle(
-                                                      color: Colors.black,
-                                                      fontFamily: 'Solway',
-                                                    ),
-                                                  ),
-                                                  MaterialButton(
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        10.0)),
-                                                    minWidth: 100,
-                                                    height: 30,
-                                                    child: Text(
-                                                      'Add to Cart',
+                                                            ['name'],
+                                                        maxLines: 1,
+                                                        style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            fontFamily:
+                                                                'Solway',
+                                                            color:
+                                                                Colors.black)),
+                                                    Text(
+                                                      "RM " +
+                                                          productdata[index]
+                                                              ['price'],
                                                       style: TextStyle(
-                                                        color: Colors.white,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.black,
                                                         fontFamily: 'Solway',
                                                       ),
                                                     ),
-                                                    color: Colors.blue,
-                                                    elevation: 0,
-                                                    onPressed: () {
-                                                      _addtocartdialog(index);
-                                                    },
-                                                  ),
-                                                ],
-                                              ),
-                                            )));
-                                  })))
-                    ]),
+                                                    Text(
+                                                      "Brand: " +
+                                                          productdata[index]
+                                                              ['type'],
+                                                      style: TextStyle(
+                                                        color: Colors.black,
+                                                        fontFamily: 'Solway',
+                                                      ),
+                                                    ),
+                                                    MaterialButton(
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          10.0)),
+                                                      minWidth: 100,
+                                                      height: 30,
+                                                      child: Text(
+                                                        'Add to Cart',
+                                                        style: TextStyle(
+                                                          color: Colors.white,
+                                                          fontFamily: 'Solway',
+                                                        ),
+                                                      ),
+                                                      color: Colors.blue,
+                                                      elevation: 0,
+                                                      onPressed: () {
+                                                        _addtocartdialog(index);
+                                                      },
+                                                    ),
+                                                  ],
+                                                ),
+                                              )));
+                                    })))
+                      ]),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ]),
+          ]),
+        ),
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _currentIndex,
           type: BottomNavigationBarType.fixed,
@@ -220,17 +233,15 @@ class _MainScreenState extends State<MainScreen> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (BuildContext context) => MainScreen(
+                          builder: (BuildContext context) => AdminScreen(
                                 user: widget.user,
                               )));
                   break;
                 case 1:
                   if (cartquantity == '0') {
                     final snackBar = SnackBar(
-                      content: Text(
-                        'Cart Empty',
-                        style: TextStyle(fontFamily: "Solway"),
-                      ),
+                      content: Text('Cart Empty',
+                          style: TextStyle(fontFamily: "Solway")),
                       action: SnackBarAction(
                         label: 'Close',
                         textColor: Colors.white,
@@ -303,6 +314,16 @@ class _MainScreenState extends State<MainScreen> {
                   ),
                 )),
           ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (BuildContext context) => NewProduct1()));
+          },
+          child: Icon(Icons.add),
+          backgroundColor: Colors.blueGrey,
         ),
       ),
     );
@@ -388,10 +409,8 @@ class _MainScreenState extends State<MainScreen> {
           print(res.body);
           if (res.body == "failed") {
             final snackBar = SnackBar(
-              content: Text(
-                'Failed to add cart',
-                style: TextStyle(fontFamily: "Solway"),
-              ),
+              content: Text('Failed to add cart',
+                  style: TextStyle(fontFamily: "Solway")),
               action: SnackBarAction(
                 label: 'Close',
                 textColor: Colors.white,
@@ -409,10 +428,8 @@ class _MainScreenState extends State<MainScreen> {
               widget.user.quantity = cartquantity;
             });
             final snackBar = SnackBar(
-              content: Text(
-                'Cart Added',
-                style: TextStyle(fontFamily: "Solway"),
-              ),
+              content:
+                  Text('Cart Added', style: TextStyle(fontFamily: "Solway")),
               action: SnackBarAction(
                 label: 'Close',
                 textColor: Colors.white,
@@ -430,10 +447,7 @@ class _MainScreenState extends State<MainScreen> {
         pr.hide();
       } else {
         final snackBar = SnackBar(
-          content: Text(
-            'Out of stock',
-            style: TextStyle(fontFamily: "Solway"),
-          ),
+          content: Text('Out of stock', style: TextStyle(fontFamily: "Solway")),
           action: SnackBarAction(
             label: 'Close',
             textColor: Colors.white,
@@ -445,10 +459,8 @@ class _MainScreenState extends State<MainScreen> {
       }
     } catch (e) {
       final snackBar = SnackBar(
-        content: Text(
-          'Failed to add cart',
-          style: TextStyle(fontFamily: "Solway"),
-        ),
+        content:
+            Text('Failed to add cart', style: TextStyle(fontFamily: "Solway")),
         action: SnackBarAction(
           label: 'Close',
           textColor: Colors.white,
@@ -521,10 +533,8 @@ class _MainScreenState extends State<MainScreen> {
                                   quantity++;
                                 } else {
                                   final snackBar = SnackBar(
-                                    content: Text(
-                                      'Quantity not available',
-                                      style: TextStyle(fontFamily: "Solway"),
-                                    ),
+                                    content: Text('Quantity not available',
+                                        style: TextStyle(fontFamily: "Solway")),
                                     action: SnackBarAction(
                                       label: 'Close',
                                       textColor: Colors.white,
@@ -617,5 +627,11 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ) ??
         false;
+  }
+
+  Future<Null> refreshList() async {
+    await Future.delayed(Duration(seconds: 2));
+    _loadData();
+    return null;
   }
 }

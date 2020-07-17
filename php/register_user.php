@@ -6,7 +6,7 @@ $email = $_POST['email'];
 $phone = $_POST['phone'];
 $password = sha1($_POST['password']);
 
-$sqlinsert = "INSERT INTO USER(NAME,EMAIL,PASSWORD,PHONE,VERIFY) VALUES ('$name','$email','$password','$phone','0')";
+$sqlinsert = "INSERT INTO USER(NAME,EMAIL,PHONE,PASSWORD,WALLET,VERIFY) VALUES ('$name','$email','$phone','$password','0','1')";
 
 if ($conn->query($sqlinsert) === true)
 {
@@ -32,3 +32,4 @@ function sendEmail($useremail) {
 }
 
 ?>
+

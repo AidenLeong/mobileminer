@@ -128,7 +128,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       ))))
                     : Expanded(
                         child: ListView.builder(
-                            //Step 6: Count the data
                             itemCount: _orderdetails == null
                                 ? 0
                                 : _orderdetails.length,

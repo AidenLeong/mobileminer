@@ -55,7 +55,6 @@ class _ProgressIndicatorState extends State<ProgressIndicator>
     animation = Tween(begin: 0.0, end: 1.0).animate(controller)
       ..addListener(() {
         setState(() {
-          //updating states
           if (animation.value > 0.99) {
             Navigator.push(
                 context,
@@ -77,10 +76,8 @@ class _ProgressIndicatorState extends State<ProgressIndicator>
   Widget build(BuildContext context) {
     return new Center(
         child: new Container(
-      //width: 300,
       child: CircularProgressIndicator(
         value: animation.value,
-        //backgroundColor: Colors.brown,
         valueColor: new AlwaysStoppedAnimation<Color>(Colors.blue),
       ),
     ));

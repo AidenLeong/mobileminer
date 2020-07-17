@@ -60,7 +60,6 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
                 ))))
               : Expanded(
                   child: ListView.builder(
-                      //Step 6: Count the data
                       itemCount: _paymentdata == null ? 0 : _paymentdata.length,
                       itemBuilder: (context, index) {
                         return Padding(
